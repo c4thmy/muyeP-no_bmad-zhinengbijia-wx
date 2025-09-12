@@ -1,0 +1,8 @@
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#f0f0f0"/>
+  <rect x="50" y="150" width="300" height="100" rx="10" fill="#ddd"/>
+  <text x="200" y="210" text-anchor="middle" fill="#999" font-size="18" font-family="Arial">商品图片</text>
+  <circle cx="120" cy="280" r="15" fill="#4CAF50"/>
+  <circle cx="200" cy="280" r="15" fill="#4CAF50"/>
+  <circle cx="280" cy="280" r="15" fill="#4CAF50"/>
+</svg>

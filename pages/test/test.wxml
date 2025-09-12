@@ -1,0 +1,81 @@
+<!-- 测试页面用于验证链接解析 -->
+<view class="test-container">
+  <view class="test-header">
+    <text class="test-title">链接验证测试</text>
+  </view>
+  
+  <view class="test-section">
+    <text class="test-label">输入测试链接：</text>
+    <textarea 
+      class="test-input"
+      placeholder="粘贴商品链接进行测试"
+      value="{{testUrl}}"
+      bindinput="onTestInput"
+      auto-height
+    ></textarea>
+    
+    <view class="button-group">
+      <button class="test-button" bindtap="testValidation">验证链接</button>
+      <button class="test-button secondary" bindtap="testParsing" disabled="{{loading}}">
+        {{loading ? '解析中...' : '解析商品'}}
+      </button>
+    </view>
+    
+    <!-- 验证结果 -->
+    <view wx:if="{{testResult}}" class="test-result">
+      <text class="result-title">验证结果：</text>
+      <view class="result-item {{testResult.valid ? 'success' : 'error'}}">
+        <text class="result-status">{{testResult.valid ? '✅ 有效' : '❌ 无效'}}</text>
+        <text class="result-message">{{testResult.error || testResult.message}}</text>
+      </view>
+      
+      <view wx:if="{{testResult.valid && testResult.platform}}" class="platform-info">
+        <text class="platform-title">平台信息：</text>
+        <text class="platform-name">{{testResult.platform.name}}</text>
+        <text class="platform-key">{{testResult.platform.key}}</text>
+        <text class="full-url">完整URL: {{testResult.fullUrl}}</text>
+      </view>
+    </view>
+
+    <!-- 解析结果 -->
+    <view wx:if="{{parseResult}}" class="parse-result">
+      <text class="result-title">解析结果：</text>
+      <view class="result-item {{parseResult.success ? 'success' : 'error'}}">
+        <text class="result-status">{{parseResult.success ? '✅ 成功' : '❌ 失败'}}</text>
+        <text class="result-message">{{parseResult.message}}</text>
+      </view>
+      
+      <view wx:if="{{parseResult.success && parseResult.product}}" class="product-info">
+        <text class="product-title">商品信息：</text>
+        <view class="product-detail">
+          <text class="product-name">{{parseResult.product.title}}</text>
+          <text class="product-price">价格：¥{{parseResult.product.price}}</text>
+          <text class="product-platform">平台：{{parseResult.product.platform}}</text>
+          <text class="product-id">ID：{{parseResult.product.id}}</text>
+          
+          <view wx:if="{{parseResult.product.params}}" class="product-params">
+            <text class="params-title">参数：</text>
+            <view wx:for="{{Object.keys(parseResult.product.params)}}" wx:key="*this" class="param-item">
+              {{item}}: {{parseResult.product.params[item]}}
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 预设测试链接 -->
+  <view class="preset-links">
+    <text class="preset-title">预设测试链接：</text>
+    <view 
+      wx:for="{{presetLinks}}" 
+      wx:key="name"
+      class="preset-item"
+      bindtap="usePresetLink"
+      data-url="{{item.url}}"
+    >
+      <text class="preset-name">{{item.name}}</text>
+      <text class="preset-url">{{item.url}}</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,175 @@
+<view class="container">
+  <!-- 空状态 -->
+  <view wx:if="{{products.length === 0}}" class="empty-state">
+    <image class="empty-icon" src="/images/empty-compare.png" mode="aspectFit"></image>
+    <text class="empty-title">暂无比较商品</text>
+    <text class="empty-subtitle">请先在首页添加商品链接</text>
+    <button class="btn-primary" bindtap="goToIndex">去添加商品</button>
+  </view>
+
+  <!-- 比较结果 -->
+  <view wx:else>
+    <!-- 比较概览 -->
+    <view class="compare-header">
+      <text class="compare-title">商品比较结果</text>
+      <text class="compare-count">共{{products.length}}个商品</text>
+      <view class="compare-actions">
+        <button class="btn-secondary" bindtap="exportResult">导出结果</button>
+        <button class="btn-secondary" bindtap="shareResult">分享</button>
+      </view>
+    </view>
+
+    <!-- 价格对比卡片 -->
+    <view class="card">
+      <view class="card-header">
+        <text>价格对比</text>
+        <view class="price-sort">
+          <button 
+            class="sort-btn {{priceSort === 'asc' ? 'active' : ''}}" 
+            bindtap="sortByPrice" 
+            data-order="asc"
+          >
+            价格升序
+          </button>
+          <button 
+            class="sort-btn {{priceSort === 'desc' ? 'active' : ''}}" 
+            bindtap="sortByPrice" 
+            data-order="desc"
+          >
+            价格降序
+          </button>
+        </view>
+      </view>
+      <view class="card-content">
+        <scroll-view scroll-x class="price-list">
+          <view 
+            wx:for="{{sortedProducts}}" 
+            wx:key="id" 
+            class="price-item {{item.isLowest ? 'lowest-price' : ''}}"
+          >
+            <image class="price-product-image" src="{{item.image}}" mode="aspectFill"></image>
+            <view class="price-info">
+              <text class="price-product-title">{{item.title}}</text>
+              <text class="price-platform">{{item.platform}}</text>
+              <text class="price-value">¥{{item.price || '解析中'}}</text>
+              <view wx:if="{{item.isLowest}}" class="lowest-badge">最低价</view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
+
+    <!-- 详细参数对比 -->
+    <view class="card">
+      <view class="card-header">
+        <text>参数对比</text>
+        <view class="param-filter">
+          <picker 
+            bindchange="onParamFilterChange" 
+            value="{{selectedParamIndex}}" 
+            range="{{paramCategories}}"
+          >
+            <button class="filter-btn">{{paramCategories[selectedParamIndex]}}</button>
+          </picker>
+        </view>
+      </view>
+      <view class="card-content">
+        <scroll-view scroll-x class="param-table">
+          <view class="param-header">
+            <view class="param-row-header">参数</view>
+            <view 
+              wx:for="{{products}}" 
+              wx:key="id" 
+              class="param-col-header"
+            >
+              {{item.title}}
+            </view>
+          </view>
+          <view 
+            wx:for="{{filteredParams}}" 
+            wx:key="key" 
+            class="param-row"
+          >
+            <view class="param-name">{{item.label}}</view>
+            <view 
+              wx:for="{{products}}" 
+              wx:for-item="product" 
+              wx:key="id" 
+              class="param-value {{getParamValueClass(product.params[item.key], item.key)}}"
+            >
+              {{product.params[item.key] || '未知'}}
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
+
+    <!-- 商品详情列表 -->
+    <view class="card">
+      <view class="card-header">
+        <text>商品详情</text>
+      </view>
+      <view class="card-content">
+        <view 
+          wx:for="{{products}}" 
+          wx:key="id" 
+          class="product-detail-item"
+          bindtap="viewProductDetail"
+          data-product="{{item}}"
+        >
+          <view class="product-detail-info">
+            <image class="product-detail-image" src="{{item.image}}" mode="aspectFill"></image>
+            <view class="product-detail-content">
+              <text class="product-detail-title">{{item.title}}</text>
+              <view class="product-detail-meta">
+                <text class="product-detail-platform">{{item.platform}}</text>
+                <text class="product-detail-price">¥{{item.price}}</text>
+              </view>
+              <view class="product-detail-params">
+                <text wx:for="{{getMainParams(item.params)}}" wx:key="key" class="param-tag">
+                  {{item.label}}: {{item.value}}
+                </text>
+              </view>
+            </view>
+          </view>
+          <view class="product-detail-actions">
+            <button class="btn-link" bindtap="copyLink" data-link="{{item.originalLink}}">
+              复制链接
+            </button>
+            <button class="btn-link" bindtap="removeFromCompare" data-id="{{item.id}}">
+              移除
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 比较总结 -->
+    <view class="card">
+      <view class="card-header">
+        <text>比较总结</text>
+      </view>
+      <view class="card-content">
+        <view class="summary-section">
+          <view class="summary-item">
+            <text class="summary-label">价格最低：</text>
+            <text class="summary-value">{{lowestPriceProduct.title}} (¥{{lowestPriceProduct.price}})</text>
+          </view>
+          <view class="summary-item">
+            <text class="summary-label">价格最高：</text>
+            <text class="summary-value">{{highestPriceProduct.title}} (¥{{highestPriceProduct.price}})</text>
+          </view>
+          <view class="summary-item">
+            <text class="summary-label">价格差：</text>
+            <text class="summary-value">¥{{priceDifference}}</text>
+          </view>
+        </view>
+        
+        <view class="recommendation">
+          <text class="recommendation-title">推荐理由</text>
+          <text class="recommendation-content">{{recommendation}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

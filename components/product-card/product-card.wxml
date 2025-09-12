@@ -1,0 +1,76 @@
+<!-- 商品卡片组件 -->
+<view class="product-card {{className}}">
+  <!-- 商品图片 -->
+  <view class="product-image-container">
+    <image 
+      class="product-image" 
+      src="{{product.image || '/images/placeholder.png'}}" 
+      mode="aspectFill"
+      lazy-load
+      bindload="onImageLoad"
+      binderror="onImageError"
+    ></image>
+    
+    <!-- 平台标签 -->
+    <view class="platform-tag">{{product.platform}}</view>
+    
+    <!-- 状态标签 -->
+    <view wx:if="{{product.isLowest}}" class="status-tag lowest">最低价</view>
+    <view wx:if="{{product.isRecommend}}" class="status-tag recommend">推荐</view>
+  </view>
+  
+  <!-- 商品信息 -->
+  <view class="product-info">
+    <text class="product-title">{{product.title || '解析中...'}}</text>
+    
+    <!-- 价格信息 -->
+    <view class="price-info">
+      <text class="current-price">¥{{product.price || '0.00'}}</text>
+      <text wx:if="{{product.originalPrice && product.originalPrice != product.price}}" 
+            class="original-price">¥{{product.originalPrice}}</text>
+    </view>
+    
+    <!-- 主要参数 -->
+    <view wx:if="{{showParams && product.params}}" class="product-params">
+      <text 
+        wx:for="{{mainParams}}" 
+        wx:key="key" 
+        class="param-item"
+      >
+        {{item.label}}: {{item.value}}
+      </text>
+    </view>
+    
+    <!-- 操作按钮 -->
+    <view class="product-actions">
+      <button 
+        wx:if="{{showViewButton}}" 
+        class="action-btn primary" 
+        bindtap="onViewProduct"
+      >
+        查看详情
+      </button>
+      
+      <button 
+        wx:if="{{showCompareButton}}" 
+        class="action-btn secondary" 
+        bindtap="onCompareProduct"
+      >
+        {{isInCompare ? '取消比较' : '加入比较'}}
+      </button>
+      
+      <button 
+        wx:if="{{showRemoveButton}}" 
+        class="action-btn danger" 
+        bindtap="onRemoveProduct"
+      >
+        移除
+      </button>
+    </view>
+  </view>
+  
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-overlay">
+    <text class="loading-text">解析中...</text>
+  </view>
+</view>

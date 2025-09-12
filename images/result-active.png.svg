@@ -1,0 +1,8 @@
+<svg width="81" height="81" xmlns="http://www.w3.org/2000/svg">
+  <rect width="81" height="81" fill="none"/>
+  <rect x="20" y="15" width="40" height="35" fill="none" stroke="#4CAF50" stroke-width="2" rx="3"/>
+  <line x1="25" y1="25" x2="55" y2="25" stroke="#4CAF50" stroke-width="1"/>
+  <line x1="25" y1="30" x2="50" y2="30" stroke="#4CAF50" stroke-width="1"/>
+  <line x1="25" y1="35" x2="45" y2="35" stroke="#4CAF50" stroke-width="1"/>
+  <text x="40" y="65" text-anchor="middle" fill="#4CAF50" font-size="10">结果</text>
+</svg>

@@ -1,0 +1,17 @@
+
+  1. 重新编译小程序
+  2. 测试不同平台链接：
+    - 淘宝: 
+https://item.taobao.com/item.htm?id=123456789
+    - 天猫: 
+https://detail.tmall.com/item.htm?id=987654321
+    - 京东:
+https://item.jd.com/12345.html    
+
+    
+  3. 使用测试页面：导航到/pages/test    
+  /test进行详细调试
+  
+  
+  
+  https://code.ppchat.vip

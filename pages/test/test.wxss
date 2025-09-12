@@ -1,0 +1,184 @@
+.test-container {
+  padding: 20rpx;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.test-header {
+  text-align: center;
+  padding: 40rpx 20rpx;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  margin-bottom: 20rpx;
+  border-radius: 12rpx;
+}
+
+.test-title {
+  font-size: 36rpx;
+  font-weight: bold;
+}
+
+.test-section {
+  background: white;
+  padding: 32rpx;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+.test-label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.test-input {
+  width: 100%;
+  min-height: 120rpx;
+  padding: 20rpx;
+  border: 2rpx solid #ddd;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  background: #fafafa;
+  margin-bottom: 24rpx;
+  line-height: 1.5;
+}
+
+.test-button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  padding: 24rpx;
+  width: 100%;
+  margin-bottom: 24rpx;
+}
+
+.test-button:active {
+  background: #45a049;
+}
+
+/* 验证结果 */
+.test-result {
+  border-top: 1rpx solid #f0f0f0;
+  padding-top: 24rpx;
+}
+
+.result-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.result-item {
+  padding: 20rpx;
+  border-radius: 8rpx;
+  margin-bottom: 16rpx;
+}
+
+.result-item.success {
+  background: #e8f5e8;
+  border: 1rpx solid #4CAF50;
+}
+
+.result-item.error {
+  background: #ffebee;
+  border: 1rpx solid #f44336;
+}
+
+.result-status {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.result-item.success .result-status {
+  color: #4CAF50;
+}
+
+.result-item.error .result-status {
+  color: #f44336;
+}
+
+.result-message {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.platform-info {
+  background: #f8f9fa;
+  padding: 20rpx;
+  border-radius: 8rpx;
+  border: 1rpx solid #e0e0e0;
+}
+
+.platform-title {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 12rpx;
+}
+
+.platform-name {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #4CAF50;
+  margin-bottom: 8rpx;
+}
+
+.platform-key {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 预设链接 */
+.preset-links {
+  background: white;
+  padding: 32rpx;
+  border-radius: 12rpx;
+}
+
+.preset-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.preset-item {
+  padding: 20rpx;
+  border: 1rpx solid #e0e0e0;
+  border-radius: 8rpx;
+  margin-bottom: 12rpx;
+  background: #fafafa;
+}
+
+.preset-item:active {
+  background: #f0f0f0;
+}
+
+.preset-name {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.preset-url {
+  display: block;
+  font-size: 22rpx;
+  color: #666;
+  word-break: break-all;
+}

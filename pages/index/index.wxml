@@ -1,0 +1,113 @@
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">智能比价</text>
+    <text class="page-subtitle">输入商品链接，快速比较价格与参数</text>
+  </view>
+
+  <!-- 商品链接输入区域 -->
+  <view class="card">
+    <view class="card-header">
+      <text>添加商品链接</text>
+    </view>
+    <view class="card-content">
+      <view class="form-item">
+        <label class="form-label">商品链接 {{products.length + 1}}</label>
+        <textarea 
+          class="form-input textarea" 
+          placeholder="请粘贴商品链接（支持淘宝、天猫、京东、拼多多）"
+          value="{{currentLink}}"
+          bindinput="onLinkInput"
+          auto-height
+          maxlength="500"
+        ></textarea>
+        <view wx:if="{{linkError}}" class="error">{{linkError}}</view>
+      </view>
+      
+      <button 
+        class="btn-primary" 
+        bindtap="addProduct" 
+        disabled="{{!currentLink || loading}}"
+      >
+        {{loading ? '解析中...' : '添加商品'}}
+      </button>
+    </view>
+  </view>
+
+  <!-- 已添加的商品列表 -->
+  <view wx:if="{{products.length > 0}}" class="card">
+    <view class="card-header flex-between">
+      <text>已添加商品 ({{products.length}})</text>
+      <button class="btn-secondary" bindtap="clearAll" wx:if="{{products.length > 1}}">
+        清空
+      </button>
+    </view>
+    <view class="card-content">
+      <view 
+        wx:for="{{products}}" 
+        wx:key="id" 
+        class="product-item"
+      >
+        <view class="product-info">
+          <image 
+            class="product-image" 
+            src="{{item.image || '/images/placeholder.png'}}" 
+            mode="aspectFill"
+            lazy-load
+          ></image>
+          <view class="product-details">
+            <text class="product-title">{{item.title || '解析中...'}}</text>
+            <text class="product-platform">{{item.platform}}</text>
+            <text class="product-price" wx:if="{{item.price}}">¥{{item.price}}</text>
+          </view>
+        </view>
+        <view class="product-actions">
+          <button 
+            class="btn-remove" 
+            bindtap="removeProduct" 
+            data-index="{{index}}"
+          >
+            删除
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 支持的平台说明 -->
+  <view class="card">
+    <view class="card-header">
+      <text>支持的购物平台</text>
+    </view>
+    <view class="card-content">
+      <view class="platform-list">
+        <view 
+          wx:for="{{supportedPlatforms}}" 
+          wx:key="name" 
+          class="platform-item"
+        >
+          <image class="platform-icon" src="/images/{{item.icon}}" mode="aspectFit"></image>
+          <text class="platform-name">{{item.name}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 开始比较按钮 -->
+  <view class="compare-section" wx:if="{{products.length >= 2}}">
+    <button class="btn-primary btn-large" bindtap="startCompare">
+      开始比较 ({{products.length}}个商品)
+    </button>
+  </view>
+
+  <!-- 使用说明 -->
+  <view class="help-section" wx:if="{{products.length === 0}}">
+    <view class="help-title">使用说明</view>
+    <view class="help-content">
+      <view class="help-item">1. 复制商品页面链接</view>
+      <view class="help-item">2. 粘贴到上方输入框</view>
+      <view class="help-item">3. 添加多个商品进行比较</view>
+      <view class="help-item">4. 查看详细比较结果</view>
+    </view>
+  </view>
+</view>
