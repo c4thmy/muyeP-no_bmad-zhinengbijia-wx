@@ -63,6 +63,8 @@ class RealProductScraper {
 
       // 检查页面内容是否为有效的商品页面
       const html = response.data
+      console.log(`[页面抓取] 页面内容长度: ${html.length}, 前200字符: ${html.substring(0, 200)}`)
+      
       const isValidProductPage = this.validateProductPage(html, finalUrl)
       
       if (!isValidProductPage) {
@@ -256,6 +258,50 @@ class RealProductScraper {
   }
 
   /**
+   * 解析天猫商品页面
+   */
+  async parseTmallProduct(url) {
+    const html = await this.fetchProductPage(url)
+    
+    console.log(`[天猫解析] 开始解析商品详情`)
+    
+    try {
+      const title = this.extractTmallTitle(html)
+      const price = this.extractTmallPrice(html)
+      const brand = this.extractTmallBrand(html)
+      const specifications = this.extractTmallSpecifications(html)
+      const description = this.extractTmallDescription(html)
+      const images = this.extractTmallImages(html)
+      const shopInfo = this.extractTmallShopInfo(html)
+
+      const productInfo = {
+        title: title || '商品标题获取失败',
+        price: price,
+        brand: brand || '',
+        specifications: specifications,
+        description: description || '',
+        images: images,
+        shop: shopInfo,
+        platform: '天猫',
+        scrapeTime: new Date().toISOString(),
+        sourceUrl: url
+      }
+
+      console.log(`[天猫解析] 解析完成:`, {
+        title: productInfo.title,
+        brand: productInfo.brand,
+        specificationsCount: Object.keys(productInfo.specifications).length
+      })
+
+      return productInfo
+
+    } catch (error) {
+      console.error(`[天猫解析] 解析失败:`, error.message)
+      throw new Error(`天猫商品解析失败: ${error.message}`)
+    }
+  }
+
+  /**
    * 解析淘宝商品页面
    */
   async parseTaobaoProduct(url) {
@@ -353,33 +399,38 @@ class RealProductScraper {
   }
 
   extractJDPrice(html) {
-    // 京东价格的常见模式（优化PC端）
+    // 京东价格的常见模式（优化移动端支持）
     const pricePatterns = [
-      // PC端价格模式
+      // 移动端特有价格模式
+      /"currentPrice":"?([0-9,]+\.?[0-9]*)"?/i,
+      /"p":"?([0-9,]+\.?[0-9]*)"?/i,
+      /"price":"?([0-9,]+\.?[0-9]*)"?/i,
+      /"jdPrice":"?([0-9,]+\.?[0-9]*)"?/i,
+      
+      // 移动端HTML结构
+      /<div[^>]*class="[^"]*price[^"]*"[^>]*>.*?¥([0-9,]+\.?[0-9]*)/i,
+      /<span[^>]*class="[^"]*price[^"]*"[^>]*>.*?¥([0-9,]+\.?[0-9]*)/i,
+      /<em[^>]*class="[^"]*price[^"]*"[^>]*>¥?([0-9,]+\.?[0-9]*)</i,
+      
+      // PC端价格模式  
       /<span[^>]*class="[^"]*price[^"]*"[^>]*>.*?¥?([0-9,]+\.?[0-9]*)<\/span>/i,
       /<em[^>]*class="[^"]*J-p-[^"]*"[^>]*>([0-9,]+\.?[0-9]*)<\/em>/i,
       /<span[^>]*id="jd-price"[^>]*>.*?([0-9,]+\.?[0-9]*)/i,
       /<div[^>]*class="[^"]*summary-price[^"]*"[^>]*>.*?¥([0-9,]+\.?[0-9]*)/i,
       
-      // JSON数据中的价格
-      /"price":"([^"]+)"/i,
-      /"p":"([^"]+)"/i,
-      /"currentPrice":"([^"]+)"/i,
-      /"jdPrice":"([^"]+)"/i,
-      
-      // HTML中的价格
+      // 通用价格匹配
       /¥\s*([0-9,]+\.?[0-9]*)/i,
       /￥\s*([0-9,]+\.?[0-9]*)/i,
       /价格[：:]?\s*¥?\s*([0-9,]+\.?[0-9]*)/i,
       /现价[：:]?\s*¥?\s*([0-9,]+\.?[0-9]*)/i,
+      /售价\s*¥?\s*([0-9,]+\.?[0-9]*)/i,
       
       // 特殊格式
       /data-price="([^"]+)"/i,
       /<span[^>]*class="[^"]*price[^"]*"[^>]*>.*?([0-9,]+\.?[0-9]*)/i,
       
-      // 从页面文本中提取
-      /售价\s*¥?\s*([0-9,]+\.?[0-9]*)/i,
-      /¥([0-9,]+\.?[0-9]*)/g // 匹配任何¥符号后的数字
+      // 从页面标题中提取价格（移动端可能包含）
+      /<title>[^<]*¥([0-9,]+\.?[0-9]*)[^<]*<\/title>/i
     ]
 
     for (const pattern of pricePatterns) {
@@ -388,6 +439,19 @@ class RealProductScraper {
         const priceStr = match[1].replace(/[^0-9.]/g, '')
         const price = parseFloat(priceStr)
         if (!isNaN(price) && price > 0 && price < 1000000) { // 合理价格范围
+          console.log(`[京东解析] 成功提取价格: ${price.toFixed(2)}`)
+          return price.toFixed(2)
+        }
+      }
+    }
+
+    // 如果没有找到价格，尝试更宽松的匹配
+    const looseMatches = html.match(/([0-9,]+\.?[0-9]*)/g)
+    if (looseMatches) {
+      for (const match of looseMatches) {
+        const price = parseFloat(match.replace(/[^0-9.]/g, ''))
+        if (!isNaN(price) && price > 10 && price < 100000) {
+          console.log(`[京东解析] 通过宽松匹配提取价格: ${price.toFixed(2)}`)
           return price.toFixed(2)
         }
       }
@@ -538,6 +602,168 @@ class RealProductScraper {
     const shopMatch = html.match(shopNamePattern)
     if (shopMatch && shopMatch[1]) {
       shop.name = this.cleanText(shopMatch[1])
+    }
+
+    return shop
+  }
+
+  // === 天猫解析方法 ===
+
+  extractTmallTitle(html) {
+    const titlePatterns = [
+      // 天猫商品标题的常见选择器
+      /<div[^>]*class="[^"]*tb-detail-hd[^"]*"[^>]*>.*?<h1[^>]*>([^<]+)<\/h1>/is,
+      /<h1[^>]*data-spm="[^"]*"[^>]*>([^<]+)<\/h1>/i,
+      /<div[^>]*class="[^"]*item-title[^"]*"[^>]*>([^<]+)<\/div>/i,
+      /<h1[^>]*class="[^"]*tb-main-title[^"]*"[^>]*>([^<]+)<\/h1>/i,
+      
+      // 从页面标题提取
+      /<title>([^<]+?)-天猫Tmall\.com<\/title>/i,
+      /<title>([^<]+?)-tmall\.com天猫<\/title>/i,
+      /<title>([^<]+?)\s*-\s*天猫/i,
+      
+      // JSON数据中的标题
+      /"title":"([^"]+)"/i,
+      /"itemTitle":"([^"]+)"/i,
+      /"defaultItemName":"([^"]+)"/i,
+      
+      // 其他可能的结构
+      /<div[^>]*class="[^"]*tb-gallery[^"]*"[^>]*>.*?<h1[^>]*>([^<]+)<\/h1>/is,
+      /<span[^>]*class="[^"]*tb-item-title[^"]*"[^>]*>([^<]+)<\/span>/i
+    ]
+
+    for (const pattern of titlePatterns) {
+      const match = html.match(pattern)
+      if (match && match[1] && match[1].trim().length > 3) {
+        let title = this.cleanText(match[1])
+        // 过滤掉无意义的标题
+        if (!title.includes('天猫') && !title.includes('登录') && !title.includes('error') && 
+            !title.includes('页面') && title.length > 5 && title.length < 200) {
+          return title
+        }
+      }
+    }
+
+    console.warn('[天猫解析] 未找到商品标题')
+    return null
+  }
+
+  extractTmallPrice(html) {
+    const pricePatterns = [
+      // 天猫价格的常见模式
+      /<span[^>]*class="[^"]*tm-price[^"]*"[^>]*>[^0-9]*([0-9,]+\.?[0-9]*)<\/span>/i,
+      /<em[^>]*class="[^"]*tm-price[^"]*"[^>]*>([0-9,]+\.?[0-9]*)<\/em>/i,
+      /<span[^>]*class="[^"]*tb-rmb-num[^"]*"[^>]*>([0-9,]+\.?[0-9]*)<\/span>/i,
+      /<div[^>]*class="[^"]*tm-price-panel[^"]*"[^>]*>.*?¥([0-9,]+\.?[0-9]*)/is,
+      
+      // JSON数据中的价格
+      /"price":"([^"]+)"/i,
+      /"defaultPrice":"([^"]+)"/i,
+      /"currentPrice":"([^"]+)"/i,
+      
+      // HTML中的价格
+      /¥\s*([0-9,]+\.?[0-9]*)/i,
+      /现价[：:]?\s*¥?\s*([0-9,]+\.?[0-9]*)/i,
+      /价格[：:]?\s*¥?\s*([0-9,]+\.?[0-9]*)/i
+    ]
+
+    for (const pattern of pricePatterns) {
+      const match = html.match(pattern)
+      if (match && match[1]) {
+        const priceStr = match[1].replace(/[^0-9.]/g, '')
+        const price = parseFloat(priceStr)
+        if (!isNaN(price) && price > 0 && price < 1000000) {
+          return price.toFixed(2)
+        }
+      }
+    }
+
+    console.warn('[天猫解析] 未找到商品价格')
+    return null
+  }
+
+  extractTmallBrand(html) {
+    const brandPatterns = [
+      // 天猫品牌信息
+      /<div[^>]*class="[^"]*tm-shop-name[^"]*"[^>]*>.*?<span[^>]*>([^<]+)<\/span>/is,
+      /<a[^>]*class="[^"]*slogo-shopname[^"]*"[^>]*>([^<]+)<\/a>/i,
+      /"brandName":"([^"]+)"/i,
+      /"brand":"([^"]+)"/i,
+      /品牌[：:]?\s*([^<>\n\r，,；;]{2,20})/i,
+      /<li[^>]*>品牌[：:]?\s*<[^>]*>([^<]+)</i
+    ]
+
+    for (const pattern of brandPatterns) {
+      const match = html.match(pattern)
+      if (match && match[1]) {
+        const brand = this.cleanText(match[1])
+        if (brand && brand.length >= 2 && brand.length <= 20) {
+          return brand
+        }
+      }
+    }
+
+    return null
+  }
+
+  extractTmallSpecifications(html) {
+    const specifications = {}
+    this.extractBasicSpecs(html, specifications)
+    return specifications
+  }
+
+  extractTmallDescription(html) {
+    const descPatterns = [
+      /<div[^>]*class="[^"]*tb-detail-desc[^"]*"[^>]*>([^<]+)<\/div>/i,
+      /<div[^>]*class="[^"]*tm-desc-detail[^"]*"[^>]*>([^<]+)<\/div>/i,
+      /"description":"([^"]+)"/i
+    ]
+
+    for (const pattern of descPatterns) {
+      const match = html.match(pattern)
+      if (match && match[1]) {
+        return this.cleanText(match[1])
+      }
+    }
+
+    return null
+  }
+
+  extractTmallImages(html) {
+    const images = []
+    const imagePatterns = [
+      /<img[^>]*src="([^"]*tmall[^"]*\.jpg[^"]*)"[^>]*>/gi,
+      /<img[^>]*data-src="([^"]+\.jpg[^"]*)"[^>]*>/gi,
+      /"images":\s*\[([^\]]+)\]/i
+    ]
+
+    for (const pattern of imagePatterns) {
+      let match
+      while ((match = pattern.exec(html)) !== null) {
+        if (match[1]) {
+          images.push(match[1])
+        }
+      }
+    }
+
+    return [...new Set(images)]
+  }
+
+  extractTmallShopInfo(html) {
+    const shop = {}
+    
+    const shopPatterns = [
+      /<a[^>]*class="[^"]*slogo-shopname[^"]*"[^>]*>([^<]+)<\/a>/i,
+      /"shopName":"([^"]+)"/i,
+      /店铺[：:]?\s*([^<>\n\r]+)/i
+    ]
+
+    for (const pattern of shopPatterns) {
+      const match = html.match(pattern)
+      if (match && match[1]) {
+        shop.name = this.cleanText(match[1])
+        break
+      }
     }
 
     return shop
@@ -727,8 +953,9 @@ class RealProductScraper {
         case 'JD':
           return await this.parseJDProduct(url)
         case 'TAOBAO':
-        case 'TMALL':
           return await this.parseTaobaoProduct(url)
+        case 'TMALL':
+          return await this.parseTmallProduct(url)
         default:
           throw new Error(`暂不支持 ${platform.name} 平台的真实抓取`)
       }

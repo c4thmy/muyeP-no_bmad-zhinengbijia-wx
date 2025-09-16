@@ -36,6 +36,25 @@
     "request": 10000,
     "downloadFile": 10000
   },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "你的位置信息将用于小程序位置接口的效果展示"
+    }
+  },
+  "requiredBackgroundModes": [],
+  "navigateToMiniProgramAppIdList": [],
+  "networkRequestDomainWhitelist": [
+    "https://item.jd.com",
+    "https://item.m.jd.com",
+    "https://wq.jd.com",
+    "https://api.m.jd.com",
+    "https://cdnware.m.jd.com",
+    "https://img13.360buyimg.com",
+    "https://img14.360buyimg.com",
+    "https://img12.360buyimg.com",
+    "https://img11.360buyimg.com",
+    "https://img10.360buyimg.com"
+  ],
   "debug": true,
   "sitemapLocation": "sitemap.json"
 }
